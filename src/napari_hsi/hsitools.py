@@ -1,7 +1,6 @@
 import numpy as np
 
 
-# Phasor function based on np.fft
 def phasor(image_stack, harmonic=1):
     """
         This function computes the average intensity image, the G and S coordinates, modulation and phase.
@@ -97,4 +96,3 @@ def imthreshold(im, imin, imax=None):
             raise ValueError("imin value is not an integer")
     else:
         raise ValueError("Empty image array")
-
