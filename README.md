@@ -25,13 +25,13 @@ https://napari.org/stable/plugins/index.html
 
 You can install `napari-hsi` via [pip]:
 
-    pip install napari-hsi
+    pip install napari-hsi-phasor
 
 
 
 To install latest development version :
 
-    pip install git+https://github.com/schutyb/napari-hsi.git
+    pip install git+https://github.com/schutyb/napari-hsi-phasor.git
 
 
 ## Contributing
