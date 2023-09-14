@@ -4,7 +4,7 @@ from . import hsitools
 from ._reader import napari_get_reader
 from ._sample_data import make_sample_data
 from ._writer import write_multiple, write_single_image
-from ._plotter import PhasorPlotterWidget
+from . import _plotter
 
 __all__ = (
     "napari_get_reader",
@@ -12,5 +12,5 @@ __all__ = (
     "write_multiple",
     "make_sample_data",
     "hsitools",
-    "PhasorPlotterWidget",
+    "_plotter",
 )

@@ -1,112 +1,113 @@
 from typing import TYPE_CHECKING
 from magicgui import magic_factory
-from napari_clusters_plotter._plotter import PlotterWidget
-from qtpy.QtCore import QSize
-from qtpy.QtWidgets import QHBoxLayout, QPushButton, QWidget
-
-
-def add_phasor_circle(ax):
-    """
-    Generate FLIM universal semi-circle plot
-    """
-    import numpy as np
-    angles = np.linspace(0, np.pi, 180)
-    x = (np.cos(angles) + 1) / 2
-    y = np.sin(angles) / 2
-    ax.plot(x, y, 'yellow', alpha=0.3)
-    return ax
-
-
-def add_tau_lines(ax, tau_list, frequency):
-    import numpy as np
-    if not isinstance(tau_list, list):
-        tau_list = [tau_list]
-    frequency = frequency * 1E6  # MHz to Hz
-    w = 2 * np.pi * frequency  # Hz to radians/s
-    for tau in tau_list:
-        tau = tau * 1E-9  # nanoseconds to seconds
-        g = 1 / (1 + ((w * tau) ** 2))
-        s = (w * tau) / (1 + ((w * tau) ** 2))
-        dot, = ax.plot(g, s, marker='o', mfc='none')
-        array = np.linspace(0, g, 50)
-        y = (array * s / g)
-        ax.plot(array, y, color=dot.get_color())
-
-
-def add_2d_histogram(ax, x, y):
-    import matplotlib.pyplot as plt
-    output = ax.hist2d(
-        x=x,
-        y=y,
-        bins=10,
-        cmap='jet',
-        norm='log',
-        alpha=0.5
-    )
-    return ax
-
-
-class PhasorPlotterWidget(PlotterWidget):
-    def __init__(self, napari_viewer):
-        super().__init__(napari_viewer)
-        self.setMinimumSize(QSize(100, 300))
-
-    def run(self,
-            features,
-            plot_x_axis_name,
-            plot_y_axis_name,
-            plot_cluster_name=None,
-            redraw_cluster_image=True, ):
-        super().run(features=features,
-                    plot_x_axis_name=plot_x_axis_name,
-                    plot_y_axis_name=plot_y_axis_name,
-                    plot_cluster_name=plot_cluster_name,
-                    redraw_cluster_image=redraw_cluster_image, )
-        add_phasor_circle(self.graphics_widget.axes)
-        self.graphics_widget.draw()
-
 
 if TYPE_CHECKING:
     import napari
-import napari.layers
 
 
-@magic_factory()
-def phasor(image_stack: "napari.layers.Image",
-           harmonic: int = 1,
-           filt: int = 0,
-           icut: int = 0,
-           v2: int = 0,
-           napari_viewer: "napari.Viewer" = None) -> None:
+def connect_events(widget):
+    """
+    Connect widget events to make some visible/invisible depending on others
+    """
+
+    def toggle_median_n_widget(event):
+        widget.median_n.visible = event
+
+    # Connect events
+    widget.apply_median.changed.connect(toggle_median_n_widget)
+    # Intial visibility states
+    widget.median_n.visible = False
+
+
+@magic_factory(widget_init=connect_events)
+def phasor_plot(image_layer: "napari.layers.Image",
+                harmonic: int = 1,
+                threshold: int = 0,
+                apply_median: bool = False,
+                median_n: int = 1,
+                Ro: float = 0.5,
+                napari_viewer: "napari.Viewer" = None) -> None:
+    """Calculate phasor components from HSI image and plot them.
+    Parameters
+    ----------
+    image_layer : napari.layers.Image
+        napari image layer with HSI data.
+    harmonic : int, optional
+        the harmonic to display in the phasor plot, by default 1
+    threshold : int, optional
+        pixels with summed intensity below this threshold will be discarded, by default 0
+    apply_median : bool, optional
+        apply median filter to image before phasor calculation, by default False (median_n is ignored)
+    median_n : int, optional
+        number of iterations of median filter, by default 1
+    napari_viewer : napari.Viewer, optional
+        napari viewer instance, by default None
+    """
+
     import numpy as np
-    from skimage.filters import median
-    image = image_stack.data
-    data = np.fft.fft(image, axis=0, norm='ortho')
-    dc = data[0].real
-    dc = np.where(dc != 0, dc, int(np.mean(dc, dtype=np.float64)))  # change the zeros to the img average
-    g = data[harmonic].real
-    g /= dc
-    s = data[harmonic].imag
-    s /= -dc
-    avg = np.mean(image, axis=0, dtype=np.float64)
-    if filt > 0:
-        for i in range(filt):
-            avg = median(avg)
-            g = median(g)
-            s = median(s)
-    aux = np.concatenate(np.where(dc > icut, dc, np.zeros(dc.shape)))
-    x = np.delete(np.concatenate(g), np.where(aux == 0))
-    y = np.delete(np.concatenate(s), np.where(aux == 0))
+    import pandas as pd
+    from napari.layers import Labels
 
+    from napari_hsi.hsitools import phasor, median_filter, histogram_thresholding, cursor_mask
+    from napari_hsi._plotter import PhasorPlotterWidget
+
+    image = image_layer.data
+    g, s, dc = phasor(image, harmonic=harmonic)
+
+    if apply_median:
+        g = median_filter(g, median_n)
+        s = median_filter(s, median_n)
+
+    x, y, _ = histogram_thresholding(dc, g, s, imin=threshold)
+    mask = cursor_mask(dc, g, s, center, Ro, ncomp=5)
+
+    phasor_components = pd.DataFrame({'label': dc, 'G': x, 'S': y})
+    table = phasor_components
+    # Build frame column
+    frame = np.arange(dc.shape[0])
+    frame = np.repeat(frame, np.prod(dc.shape[1:]))
+    table['frame'] = frame[mask.ravel()]
+
+    # The layer has to be created here so the plotter can be filled properly
+    # below. Overwrite layer if it already exists.
+    for layer in napari_viewer.layers:
+        if (isinstance(layer, Labels)) & (layer.name == 'Labelled_pixels_from_' + image_layer.name):
+            labels_layer = layer
+            labels_layer.data = dc
+            labels_layer.features = table
+            break
+    else:
+        labels_layer = napari_viewer.add_labels(dc,
+                                                name='Labelled_pixels_from_' + image_layer.name,
+                                                features=table,
+                                                scale=image_layer.scale[1:],
+                                                visible=False)
 
     # Check if plotter was already added to dock_widgets
-    # TO DO: avoid using private method access to napari_viewer.window._dock_widgets (will be deprecated)
-    dock_widgets_names = [key for key, value in napari_viewer.window._dock_widgets.items()]
-    if 'Plotter Widget' not in dock_widgets_names:
+    dock_widgets_names = [key for key, value in napari_viewer.window.dock_widgets.items()]
+    if 'Phasor Plotter Widget (napari-hsi)' not in dock_widgets_names:
         plotter_widget = PhasorPlotterWidget(napari_viewer)
         napari_viewer.window.add_dock_widget(
-            plotter_widget, name='Plotter Widget')
+            plotter_widget, name='Phasor Plotter Widget (napari-hsi)')
     else:
-        widgets = napari_viewer.window._dock_widgets['Plotter Widget']
+        widgets = napari_viewer.window._dock_widgets['Phasor Plotter Widget (napari-hsi)']
         plotter_widget = widgets.findChild(PhasorPlotterWidget)
+
+    # Get labels layer with labelled pixels (labels)
+    plotter_widget.labels_select.value = [
+        choice for choice in plotter_widget.labels_select.choices if choice.name.startswith("Labelled_pixels")][0]
+    # Set G and S as features to plot (update_axes_list method clears Comboboxes)
+    plotter_widget.plot_x_axis.setCurrentIndex(1)
+    plotter_widget.plot_y_axis.setCurrentIndex(2)
+    plotter_widget.plotting_type.setCurrentIndex(1)
+
+    # Show parent (PlotterWidget) so that run function can run properly
+    plotter_widget.parent().show()
+    # Disconnect selector to reset collection of points in plotter
+    # (it gets reconnected when 'run' method is run)
+    plotter_widget.graphics_widget.selector.disconnect()
+    plotter_widget.run(labels_layer.features,
+                       plotter_widget.plot_x_axis.currentText(),
+                       plotter_widget.plot_y_axis.currentText())
+    plotter_widget.redefine_axes_limits(ensure_full_semi_circle_displayed=True)
     return
