@@ -11,7 +11,7 @@ contributions:
     - id: napari-hsi-phasor.write_single_image
       python_name: napari_hsi_phasor._writer:write_single_image
       title: Save image data with Hyperspectral Imaging
-    - id: nnapari-hsi-phasor.make_sample_data
+    - id: napari-hsi-phasor.make_sample_data
       python_name: napari_hsi_phasor._sample_data:make_sample_data
       title: Load sample data from Hyperspectral Imaging
     - id: napari-hsi-phasor.make_qwidget
