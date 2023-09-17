@@ -1,42 +1,42 @@
-name: napari-hsi
-display_name: Hyperspectral Imaging
+name: napari-hsi-phasor
+display_name: Hyperspectral Imaging and Phasor
 contributions:
   commands:
-    - id: napari-hsi.get_reader
-      python_name: napari_hsi._reader:napari_get_reader
+    - id: napari-hsi-phasor.get_reader
+      python_name: napari_hsi_phasor._reader:napari_get_reader
       title: Open data with Hyperspectral Imaging
-    - id: napari-hsi.write_multiple
-      python_name: napari_hsi._writer:write_multiple
+    - id: napari-hsi-phasor.write_multiple
+      python_name: napari_hsi_phasor._writer:write_multiple
       title: Save multi-layer data with Hyperspectral Imaging
-    - id: napari-hsi.write_single_image
-      python_name: napari_hsi._writer:write_single_image
+    - id: napari-hsi-phasor.write_single_image
+      python_name: napari_hsi_phasor._writer:write_single_image
       title: Save image data with Hyperspectral Imaging
-    - id: napari-hsi.make_sample_data
-      python_name: napari_hsi._sample_data:make_sample_data
+    - id: nnapari-hsi-phasor.make_sample_data
+      python_name: napari_hsi_phasor._sample_data:make_sample_data
       title: Load sample data from Hyperspectral Imaging
-    - id: napari-hsi.make_qwidget
-      python_name: napari_hsi._widget:ExampleQWidget
+    - id: napari-hsi-phasor.make_qwidget
+      python_name: napari_hsi_phasor._widget:ExampleQWidget
       title: Make example QWidget
 
-    - id: napari-hsi.make_magic_widget
-      python_name: napari_hsi._widget:phasor
+    - id: napari-hsi-phasor.make_magic_widget
+      python_name: napari_hsi_phasor._widget:phasor
       title: Make phasor widget
 
   readers:
-    - command: napari-hsi.get_reader
+    - command: napari-hsi-phasor.get_reader
       accepts_directories: false
       filename_patterns: ['*.npy']
   writers:
-    - command: napari-hsi.write_multiple
+    - command: napari-hsi-phasor.write_multiple
       layer_types: ['image*','labels*']
       filename_extensions: []
-    - command: napari-hsi.write_single_image
+    - command: napari-hsi-phasor.write_single_image
       layer_types: ['image']
       filename_extensions: ['.npy']
   sample_data:
-    - command: napari-hsi.make_sample_data
+    - command: napari-hsi-phasor.make_sample_data
       display_name: Hyperspectral Imaging
       key: unique_id.1
   widgets:
-    - command: napari-hsi.make_magic_widget
+    - command: napari-hsi-phasor.make_magic_widget
       display_name: Example Magic Widget
