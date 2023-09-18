@@ -19,7 +19,7 @@ contributions:
       title: Make example QWidget
 
     - id: napari-hsi-phasor.make_magic_widget
-      python_name: napari_hsi_phasor._widget:phasor
+      python_name: napari_hsi_phasor._widget:phasor_plot
       title: Make phasor widget
 
   readers:

@@ -48,8 +48,8 @@ def phasor_plot(image_layer: "napari.layers.Image",
     import pandas as pd
     from napari.layers import Labels
 
-    from napari_hsi.hsitools import phasor, median_filter, histogram_thresholding, cursor_mask
-    from napari_hsi._plotter import PhasorPlotterWidget
+    from napari_hsi_phasor.hsitools import phasor, median_filter, histogram_thresholding, cursor_mask
+    from napari_hsi_phasor._plotter import PhasorPlotterWidget
 
     image = image_layer.data
     g, s, dc = phasor(image, harmonic=harmonic)
@@ -59,14 +59,14 @@ def phasor_plot(image_layer: "napari.layers.Image",
         s = median_filter(s, median_n)
 
     x, y, _ = histogram_thresholding(dc, g, s, imin=threshold)
-    mask = cursor_mask(dc, g, s, center, Ro, ncomp=5)
+    # mask = cursor_mask(dc, g, s, center, Ro, ncomp=5) todo: the mask need to take the (g, s) coordinate of the circle center
 
-    phasor_components = pd.DataFrame({'label': dc, 'G': x, 'S': y})
+    phasor_components = pd.DataFrame({'label': dc, 'G': x, 'S': y}) # todo: revise the label because it must be the same size as g and s
     table = phasor_components
     # Build frame column
     frame = np.arange(dc.shape[0])
     frame = np.repeat(frame, np.prod(dc.shape[1:]))
-    table['frame'] = frame[mask.ravel()]
+    # table['frame'] = frame[mask.ravel()]
 
     # The layer has to be created here so the plotter can be filled properly
     # below. Overwrite layer if it already exists.
@@ -74,23 +74,23 @@ def phasor_plot(image_layer: "napari.layers.Image",
         if (isinstance(layer, Labels)) & (layer.name == 'Labelled_pixels_from_' + image_layer.name):
             labels_layer = layer
             labels_layer.data = dc
-            labels_layer.features = table
+            # labels_layer.features = table
             break
     else:
         labels_layer = napari_viewer.add_labels(dc,
                                                 name='Labelled_pixels_from_' + image_layer.name,
-                                                features=table,
+                                                # features=table,
                                                 scale=image_layer.scale[1:],
                                                 visible=False)
 
     # Check if plotter was already added to dock_widgets
     dock_widgets_names = [key for key, value in napari_viewer.window.dock_widgets.items()]
-    if 'Phasor Plotter Widget (napari-hsi)' not in dock_widgets_names:
+    if 'Phasor Plotter Widget (napari-hsi-phasor)' not in dock_widgets_names:
         plotter_widget = PhasorPlotterWidget(napari_viewer)
         napari_viewer.window.add_dock_widget(
-            plotter_widget, name='Phasor Plotter Widget (napari-hsi)')
+            plotter_widget, name='Phasor Plotter Widget (napari-hsi-phasor)')
     else:
-        widgets = napari_viewer.window._dock_widgets['Phasor Plotter Widget (napari-hsi)']
+        widgets = napari_viewer.window._dock_widgets['Phasor Plotter Widget (napari-hsi-phasor)']
         plotter_widget = widgets.findChild(PhasorPlotterWidget)
 
     # Get labels layer with labelled pixels (labels)

@@ -1,11 +1,11 @@
-# napari-hsi
+# napari-hsi-phasor
 
-[![License BSD-3](https://img.shields.io/pypi/l/napari-hsi.svg?color=green)](https://github.com/schutyb/napari-hsi/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-hsi.svg?color=green)](https://pypi.org/project/napari-hsi)
-[![Python Version](https://img.shields.io/pypi/pyversions/napari-hsi.svg?color=green)](https://python.org)
-[![tests](https://github.com/schutyb/napari-hsi/workflows/tests/badge.svg)](https://github.com/schutyb/napari-hsi/actions)
-[![codecov](https://codecov.io/gh/schutyb/napari-hsi/branch/main/graph/badge.svg)](https://codecov.io/gh/schutyb/napari-hsi)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-hsi)](https://napari-hub.org/plugins/napari-hsi)
+[![License BSD-3](https://img.shields.io/pypi/l/napari-hsi-phasor.svg?color=green)](https://github.com/schutyb/napari-hsi-phasor/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/napari-hsi-phasor.svg?color=green)](https://pypi.org/project/napari-hsi-phasor)
+[![Python Version](https://img.shields.io/pypi/pyversions/napari-hsi-phasor.svg?color=green)](https://python.org)
+[![tests](https://github.com/schutyb/napari-hsi-phasor/workflows/tests/badge.svg)](https://github.com/schutyb/napari-hsi-phasor/actions)
+[![codecov](https://codecov.io/gh/schutyb/napari-hsi-phasor/branch/main/graph/badge.svg)](https://codecov.io/gh/schutyb/napari-hsi-phasor)
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-hsi-phasor)](https://napari-hub.org/plugins/napari-hsi-phasor)
 
 A simple plugin to performe hyperspectral imaging
 
@@ -23,7 +23,7 @@ https://napari.org/stable/plugins/index.html
 
 ## Installation
 
-You can install `napari-hsi` via [pip]:
+You can install `napari-hsi-phasor` via [pip]:
 
     pip install napari-hsi-phasor
 
