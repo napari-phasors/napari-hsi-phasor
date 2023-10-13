@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from magicgui import magic_factory
-
 if TYPE_CHECKING:
     import napari
 
@@ -25,7 +24,6 @@ def phasor_plot(image_layer: "napari.layers.Image",
                 threshold: int = 0,
                 apply_median: bool = False,
                 median_n: int = 1,
-                Ro: float = 0.5,
                 napari_viewer: "napari.Viewer" = None) -> None:
     """Calculate phasor components from HSI image and plot them.
     Parameters
@@ -48,8 +46,9 @@ def phasor_plot(image_layer: "napari.layers.Image",
     import pandas as pd
     from napari.layers import Labels
 
-    from napari_hsi_phasor.hsitools import phasor, median_filter, histogram_thresholding, cursor_mask
+    from napari_hsi_phasor.hsitools import phasor, median_filter
     from napari_hsi_phasor._plotter import PhasorPlotterWidget
+    from skimage.segmentation import relabel_sequential
 
     image = image_layer.data
     g, s, dc = phasor(image, harmonic=harmonic)
@@ -58,33 +57,47 @@ def phasor_plot(image_layer: "napari.layers.Image",
         g = median_filter(g, median_n)
         s = median_filter(s, median_n)
 
-    x, y, _ = histogram_thresholding(dc, g, s, imin=threshold)
-    # mask = cursor_mask(dc, g, s, center, Ro, ncomp=5) todo: the mask need to take the (g, s) coordinate of the circle center
+    dc = dc[np.newaxis, np.newaxis, :, :]
+    g = g[np.newaxis, np.newaxis, :, :]
+    s = s[np.newaxis, np.newaxis, :, :]
 
-    phasor_components = pd.DataFrame({'label': dc, 'G': x, 'S': y}) # todo: revise the label because it must be the same size as g and s
-    table = phasor_components
-    # Build frame column
+    space_mask = dc > threshold
+    label_image = np.arange(np.prod(dc.shape)).reshape(dc.shape) + 1
+    label_image[~space_mask] = 0
+    label_image = relabel_sequential(label_image)[0]
+    label_column = np.ravel(label_image[space_mask])
+
+    g_flat_masked = np.ravel(g[space_mask])
+    s_flat_masked = np.ravel(s[space_mask])
+
+    table = pd.DataFrame({
+        'label': np.ravel(label_image[space_mask]),
+        'G': g_flat_masked,
+        'S': s_flat_masked})
+
     frame = np.arange(dc.shape[0])
     frame = np.repeat(frame, np.prod(dc.shape[1:]))
-    # table['frame'] = frame[mask.ravel()]
+    table['frame'] = frame[space_mask.ravel()]
 
     # The layer has to be created here so the plotter can be filled properly
     # below. Overwrite layer if it already exists.
     for layer in napari_viewer.layers:
         if (isinstance(layer, Labels)) & (layer.name == 'Labelled_pixels_from_' + image_layer.name):
             labels_layer = layer
-            labels_layer.data = dc
-            # labels_layer.features = table
+            labels_layer.data = label_image
+            labels_layer.features = table
             break
     else:
-        labels_layer = napari_viewer.add_labels(dc,
+        labels_layer = napari_viewer.add_labels(label_image,
                                                 name='Labelled_pixels_from_' + image_layer.name,
-                                                # features=table,
+                                                features=table,
                                                 scale=image_layer.scale[1:],
                                                 visible=False)
 
-    # Check if plotter was already added to dock_widgets
-    dock_widgets_names = [key for key, value in napari_viewer.window.dock_widgets.items()]
+    # Check if plotter was alrerady added to dock_widgets
+    # TO DO: avoid using private method access to napari_viewer.window._dock_widgets (will be deprecated)
+    dock_widgets_names = [key for key,
+                                  value in napari_viewer.window._dock_widgets.items()]
     if 'Phasor Plotter Widget (napari-hsi-phasor)' not in dock_widgets_names:
         plotter_widget = PhasorPlotterWidget(napari_viewer)
         napari_viewer.window.add_dock_widget(
@@ -109,5 +122,6 @@ def phasor_plot(image_layer: "napari.layers.Image",
     plotter_widget.run(labels_layer.features,
                        plotter_widget.plot_x_axis.currentText(),
                        plotter_widget.plot_y_axis.currentText())
-    plotter_widget.redefine_axes_limits(ensure_full_semi_circle_displayed=True)
+    plotter_widget.axes_limits()
     return
+

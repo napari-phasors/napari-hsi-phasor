@@ -1,5 +1,8 @@
 import numpy as np
 from skimage.filters import median
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import napari.types
 
 
 def phasor(image_stack, harmonic=1):
@@ -49,45 +52,6 @@ def median_filter(im, n):
         raise ValueError("Image stack data is not an array")
 
 
-def histogram_thresholding(dc, g, s, imin, imax=None):
-    """
-        Use this function to filter the background deleting, those pixels where the intensity value is under ic.
-    :param dc: ndarray. HSI stack average intensity image.
-    :param g: ndarray. G image.
-    :param s: ndarray. S image.
-    :param imin: Type integer. Minimum cutoff intensity value.
-    :param imax: Type integer. Maximum cutoff intensity value.
-    :return: x, y. Arrays contain the G and S phasor coordinates.
-    """
-    if dc.any():
-        if g.any():
-            if s.any():
-                if isinstance(imin, int):
-                    aux = np.concatenate(np.where(dc > imin, dc, np.zeros(dc.shape)))
-                    g = np.concatenate(g)
-                    s = np.concatenate(s)
-                    if imax:
-                        if isinstance(imax, int):
-                            aux2 = np.concatenate(np.where(dc < imax, np.ones(dc.shape), np.zeros(dc.shape)))
-                            aux = aux * aux2
-                            x = np.delete(g, np.where(aux == 0))
-                            y = np.delete(s, np.where(aux == 0))
-                        else:
-                            raise ValueError("imax value is not an integer")
-                    else:
-                        x = np.delete(g, np.where(aux == 0))
-                        y = np.delete(s, np.where(aux == 0))
-                    return x, y, aux
-                else:
-                    raise ValueError("imin value is not an integer")
-            else:
-                raise ValueError("Empty s array")
-        else:
-            raise ValueError("Empty g array")
-    else:
-        raise ValueError("Empty dc array")
-
-
 def cursor_mask(dc, g, s, center, Ro, ncomp=5):
     """
         Create a matrix to see if a pixels is into the circle, using circle equation
@@ -109,3 +73,4 @@ def cursor_mask(dc, g, s, center, Ro, ncomp=5):
         indices = np.where(M < 0)
         img[indices[0], indices[1], :3] = ccolor[i]
     return img
+
