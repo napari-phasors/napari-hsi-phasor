@@ -45,13 +45,14 @@ def phasor_plot(image_layer: "napari.layers.Image",
     import numpy as np
     import pandas as pd
     from napari.layers import Labels
+    import dask.array as da
 
     from napari_hsi_phasor.hsitools import phasor, median_filter
     from napari_hsi_phasor._plotter import PhasorPlotterWidget
     from skimage.segmentation import relabel_sequential
 
     image = image_layer.data
-    g, s, dc = phasor(image, harmonic=harmonic)
+    dc, g, s = phasor(image, harmonic=harmonic)
 
     if apply_median:
         g = median_filter(g, median_n)
@@ -69,11 +70,15 @@ def phasor_plot(image_layer: "napari.layers.Image",
 
     g_flat_masked = np.ravel(g[space_mask])
     s_flat_masked = np.ravel(s[space_mask])
+    if isinstance(g, da.Array):
+        g_flat_masked.compute_chunk_sizes()
+        s_flat_masked.compute_chunk_sizes()
 
-    table = pd.DataFrame({
+    phasor_components = pd.DataFrame({
         'label': np.ravel(label_image[space_mask]),
         'G': g_flat_masked,
         'S': s_flat_masked})
+    table = phasor_components
 
     frame = np.arange(dc.shape[0])
     frame = np.repeat(frame, np.prod(dc.shape[1:]))
@@ -124,4 +129,3 @@ def phasor_plot(image_layer: "napari.layers.Image",
                        plotter_widget.plot_y_axis.currentText())
     plotter_widget.axes_limits()
     return
-

@@ -51,26 +51,3 @@ def median_filter(im, n):
     else:
         raise ValueError("Image stack data is not an array")
 
-
-def cursor_mask(dc, g, s, center, Ro, ncomp=5):
-    """
-        Create a matrix to see if a pixels is into the circle, using circle equation
-    so the negative values of Mi means that the pixel belong to the circle and multiply
-    aux1 to set zero where the avg image is under ic value
-    :param ncomp: number of cursors to be used in the phasor, and the pseudocolor image.
-    :param dc: ndarray. Intensity image.
-    :param g:  ndarray. G image.
-    :param s:  ndarray. S image.
-    :param ic: intensity cut umbral. Default 0
-    :param Ro: circle radius.
-    :param center: ndarray containing the center coordinate of each circle.
-    :return: rgba pseudocolored image.
-    """
-    img = np.zeros([dc.shape[0], dc.shape[1], 3])
-    ccolor = [[128, 0, 128], [0, 0, 1], [0, 1, 0], [255, 255, 0], [1, 0, 0]]  # colors are v, b, g, y, r
-    for i in range(ncomp):
-        M = ((g - center[i][0]) ** 2 + (s - center[i][1]) ** 2 - Ro ** 2)
-        indices = np.where(M < 0)
-        img[indices[0], indices[1], :3] = ccolor[i]
-    return img
-

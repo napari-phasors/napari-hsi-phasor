@@ -1,7 +1,6 @@
 from napari_clusters_plotter._plotter import PlotterWidget
 from qtpy.QtCore import QSize
 import numpy as np
-from matplotlib import colors
 
 
 class PhasorPlotterWidget(PlotterWidget):

@@ -1,4 +1,4 @@
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from . import hsitools
 from ._reader import napari_get_reader

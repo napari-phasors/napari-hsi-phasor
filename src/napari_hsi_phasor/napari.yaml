@@ -39,4 +39,4 @@ contributions:
       key: unique_id.1
   widgets:
     - command: napari-hsi-phasor.make_magic_widget
-      display_name: Example Magic Widget
+      display_name: Calculate phasor for hsi
