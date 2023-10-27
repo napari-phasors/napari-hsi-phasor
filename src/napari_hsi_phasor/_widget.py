@@ -24,6 +24,14 @@ def phasor_plot(image_layer: "napari.layers.Image",
                 threshold: int = 0,
                 apply_median: bool = False,
                 median_n: int = 1,
+                tile: bool=False,
+                vertical_dim: int=1024,
+                horizontal_dim: int=1024,
+                vertical_im: int=1,
+                horizontal_im: int=1,
+                v_overlapping_per: float=0.05,
+                h_overlapping_per: float=0.05,
+                store_dir: bool=False, # set true for bidirectional storing 
                 napari_viewer: "napari.Viewer" = None) -> None:
     """Calculate phasor components from HSI image and plot them.
     Parameters
@@ -47,12 +55,20 @@ def phasor_plot(image_layer: "napari.layers.Image",
     from napari.layers import Labels
     import dask.array as da
 
-    from napari_hsi_phasor.hsitools import phasor, median_filter
+    from napari_hsi_phasor.hsitools import phasor, median_filter, tilephasor, stitching
     from napari_hsi_phasor._plotter import PhasorPlotterWidget
     from skimage.segmentation import relabel_sequential
 
     image = image_layer.data
-    dc, g, s = phasor(image, harmonic=harmonic)
+
+    if tile:
+        dc, g, s = tilephasor(image, vertical_dim, horizontal_dim, harmonic=harmonic)
+        dc = stitching(dc, vertical_im, horizontal_im, h_overlapping_per, v_overlapping_per, store_dir)
+        g = stitching(g, vertical_im, horizontal_im, h_overlapping_per, v_overlapping_per, store_dir)
+        s = stitching(s, vertical_im, horizontal_im, h_overlapping_per, v_overlapping_per, store_dir)
+
+    else:
+        dc, g, s = phasor(image, harmonic=harmonic)
 
     if apply_median:
         g = median_filter(g, median_n)
