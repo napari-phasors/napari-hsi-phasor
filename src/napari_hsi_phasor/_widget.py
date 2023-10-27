@@ -11,11 +11,18 @@ def connect_events(widget):
 
     def toggle_median_n_widget(event):
         widget.median_n.visible = event
-
     # Connect events
     widget.apply_median.changed.connect(toggle_median_n_widget)
     # Intial visibility states
     widget.median_n.visible = False
+
+    def toggle_tile_widget(event):
+    widget.tile.visible = event
+    # Connect events
+    widget.tile.changed.connect(toggle_tile_widget)
+    # Intial visibility states
+    widget.tile.visible = False
+
 
 
 @magic_factory(widget_init=connect_events)
@@ -24,14 +31,14 @@ def phasor_plot(image_layer: "napari.layers.Image",
                 threshold: int = 0,
                 apply_median: bool = False,
                 median_n: int = 1,
-                tile: bool=False,
-                vertical_dim: int=1024,
-                horizontal_dim: int=1024,
-                vertical_im: int=1,
-                horizontal_im: int=1,
-                v_overlapping_per: float=0.05,
-                h_overlapping_per: float=0.05,
-                store_dir: bool=False, # set true for bidirectional storing 
+                tile: bool = False,
+                vertical_dim: int = 1024,
+                horizontal_dim: int = 1024,
+                vertical_im: int = 1,
+                horizontal_im: int = 1,
+                v_overlapping_per: float = 0.05,
+                h_overlapping_per: float = 0.05,
+                store_dir: bool = False, # set true for bidirectional storing 
                 napari_viewer: "napari.Viewer" = None) -> None:
     """Calculate phasor components from HSI image and plot them.
     Parameters
