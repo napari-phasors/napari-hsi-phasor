@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/schutyb/napari-hsi-phasor/branch/main/graph/badge.svg)](https://codecov.io/gh/schutyb/napari-hsi-phasor)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-hsi-phasor)](https://napari-hub.org/plugins/napari-hsi-phasor)
 
-A simple plugin to performe hyperspectral imaging
+Plugin to performe hyperspectral imaging
 
 ----------------------------------
 
