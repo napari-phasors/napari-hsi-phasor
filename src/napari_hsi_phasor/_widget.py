@@ -17,7 +17,7 @@ def connect_events(widget):
     widget.median_n.visible = False
 
     def toggle_tile_widget(event):
-    widget.tile.visible = event
+        widget.tile.visible = event
     # Connect events
     widget.tile.changed.connect(toggle_tile_widget)
     # Intial visibility states
