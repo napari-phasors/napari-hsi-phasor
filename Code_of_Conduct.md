@@ -1,4 +1,4 @@
-# hsipy Code of Conduct 
+# Code of Conduct 
 
 ## Introduction
 This community can be made by a diversity of people contributing from completely different backgrounds, personal and professional. Professionals, volunteers and users are expected to respect the following guidelines in order to maintain a healthy environment.  
